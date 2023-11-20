@@ -1,14 +1,14 @@
 import json
 from collections import defaultdict
-
+from OSCQueryNodeTypes import AccessValues, osc_type_for
 class OSCQueryNode:
-    def __init__(self, fullPath):
+    def __init__(self, fullPath: str,  access: AccessValues, description: str =None, contents: dict =None, oscType: str =None, value=None):
         self.FullPath = fullPath
-        self.Description = None
-        self.Access = None
-        self.Contents = None
-        self.OscType = None
-        self.Value = None
+        self.Description = description
+        self.Access = access
+        self.Contents = contents
+        self.OscType = oscType
+        self.Value = value
 
     @property
     def ParentPath(self):
@@ -22,12 +22,14 @@ class OSCQueryNode:
     def __str__(self):
         dict_copy = self.__dict__.copy()
         dict_copy.pop('_pathLookup', None)
-        return json.dumps(dict_copy, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+        
+        try: 
+            return json.dumps(dict_copy, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class OSCQueryRootNode(OSCQueryNode):
     def __init__(self):
-        super().__init__('/')
+        super().__init__('/', AccessValues.ReadWrite, "Root Node")
         self._pathLookup = {"/": self}
 
     def GetNodeWithPath(self, path):
@@ -42,7 +44,12 @@ class OSCQueryRootNode(OSCQueryNode):
     def AddNode(self, node):
         parent = self.GetNodeWithPath(node.ParentPath)
         if parent is None:
-            parent = self.AddNode(OSCQueryNode(node.ParentPath))
+            parent = self.AddNode(OSCQueryNode(node.ParentPath, 
+                                               node.Access, 
+                                               node.Description, 
+                                               node.Contents, 
+                                               node.OscType, 
+                                               node.Value))
 
         if parent.Contents is None:
             parent.Contents = {}
@@ -56,7 +63,7 @@ class OSCQueryRootNode(OSCQueryNode):
         return node
 
     def RemoveNode(self, path):
-        if poath in self._pathLookup:
+        if path in self._pathLookup:
             node = self._pathLookup[path]
             parent = self.GetNodeWithPath(node.ParentPath)
 

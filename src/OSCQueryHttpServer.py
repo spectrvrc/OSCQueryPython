@@ -4,7 +4,7 @@ import json
 from OSCQueryNode import OSCQueryRootNode, OSCQueryNode
 
 
-class OSCQueryHttpServer:
+class PyOSCQuery:
     def __init__(self, port=8000, host='localhost'):
         self.app = Flask(__name__)
         self.app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -29,7 +29,7 @@ class OSCQueryHttpServer:
             return str(self.root_node)
 
     def debug(self):
-        return self.app.debug
+        return str(self.root_node)
 
     def run(self):
         self.app.run(host=self.host, port=self.port, debug=True)
